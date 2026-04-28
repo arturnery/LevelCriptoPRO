@@ -1,14 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import SuccessModal from "@/components/SuccessModal";
 
 import {
   ArrowRight,
-  Copy,
-  Check,
   X,
-  ChevronDown,
   Instagram,
   Youtube,
   Twitter,
@@ -20,39 +16,7 @@ interface FAQItem {
   answer: string;
 }
 
-// Hook para detectar quando elemento entra na viewport
-const useInView = (ref: React.RefObject<HTMLElement>, threshold = 0.1) => {
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [ref, threshold]);
-
-  return isInView;
-}
-
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,31 +33,31 @@ export default function Home() {
     {
       name: "loratsm",
       turma: "",
-      avatar: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/BxtooNIozBGsEYps.jpg",
+      avatar: "/images/dep-loratsm.png",
       text: "Parabéns pelo curso, muito top. entrei no Level Pro sem saber praticamente nada além de comprar, haha. O módulo q fala sobre autocustódia já valeu o curso inteiro pra mim. Hoje sei praticamente todas as áreas do mercado e até comecei a analisar alts por conta própria. Recomendo demais pra quem quer realmente aprender cripto de verdade na prática. Vlw"
     },
     {
       name: "Leonardo",
       turma: "",
-      avatar: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/jHKEmeybxfyvsKId.jpg",
+      avatar: "/images/dep-leonardo.jpg",
       text: "Cara que aula inicial contextualizando toda a criação do BTC e Subprime foi essa, foda demais. Curso muito completo mesmo. Gostei, não fica só na teoria. Tem parte de como operar em corretora, análise gráfica, altcoins, DeFi... até mineração eu aprendi o básico. Sem falar na comunidade, que é top. Sempre tem alguém comentando oportunidades e se ajudando, bom pra quem está começando e também já tem conhecimento."
     },
     {
       name: "Elikaq22",
       turma: "",
-      avatar: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/FIyXgwOpWRGIUDDu.jpg",
+      avatar: "/images/dep-elikaq22.jpg",
       text: "Eu já estava no mercado cripto há um tempo, mas percebi que não estava evoluindo. Aqui junto de vcs no Level Pro finalmente entendi várias coisas que ninguém explica direito: como surgiu o Bitcoin, como funcionam os ciclos do mercado e principalmente análise gráfica, agraço aos professores pela paciência e dedicação. Outro ponto que gostei muito foi a parte de airdrops e DeFi, que abriu minha cabeça para novas oportunidades. E a comunidade fechada ajuda muito, sempre tem gente trocando ideia e tirando dúvidas. Pra mim que estava sozinho nesse mercado foi um divisor de águas. Vocês são fera"
     },
     {
       name: "Carlos S.",
       turma: "",
-      avatar: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/oYuXOgSyTXVIQrBn.jpg",
+      avatar: "/images/dep-carlosS.jpg",
       text: "Já fiz outros cursos de cripto antes, mas nenhum explicou tão bem a lógica do mercado e os ciclos. A parte de análise gráfica é muito clara e me ajudou demais nas minhas operações, aprendi a montar uma carteira equilibrada e administrar os meus ativos. Vlw pessoal 👊"
     },
     {
       name: "JuniorP",
       turma: "",
-      avatar: "👤",
+      avatar: "/images/dep-juniorP.png",
       text: "Irmão que treinão foi esse, kkkkk ... está valendo muito mais a pena do que uns cursos caros que tem por aí, conteúdo de primeira, informações valiosas. O Level Cripto Pro me ajudou muito, muito grato a vcs. Pra quem quer entrar no mundo cripto com o pé direito, vale muito a pena."
     }
   ];
@@ -317,7 +281,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-48 px-4 md:px-8 bg-black relative overflow-hidden" style={{ backgroundImage: 'url(https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/JiiQsRoDMuRcYGky.webp)', backgroundAttachment: 'fixed', backgroundPosition: 'center center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }}>
+      <section className="pt-32 pb-48 px-4 md:px-8 bg-black relative overflow-hidden" style={{ backgroundImage: 'url(/images/hero-bg.png)', backgroundAttachment: 'fixed', backgroundPosition: 'center center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }}>
         {/* Background Image - Parallax effect applied via CSS background-attachment: fixed */}
         {/* Overlay escuro para legibilidade */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" style={{ zIndex: 2 }}></div>
@@ -575,7 +539,7 @@ export default function Home() {
             
             <div className="flex justify-center md:justify-end md:-mr-32 md:-mb-24 relative z-20">
               <img 
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/image_fb935059.webp" 
+                src="/images/mockup-desktop.png"
                 alt="Level Cripto PRO Desktop" 
                 className="w-full h-auto" 
                 style={{
@@ -604,7 +568,7 @@ export default function Home() {
             {/* MÓDULO 1 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_01_3df7fab6.webp" alt="Módulo 1" className="w-full h-full object-cover" />
+                <img src="/images/MD_01.webp" alt="Módulo 1" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -618,7 +582,7 @@ export default function Home() {
             {/* MÓDULO 2 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_02_a12fd9f5.webp" alt="Módulo 2" className="w-full h-full object-cover" />
+                <img src="/images/MD_02.webp" alt="Módulo 2" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -632,7 +596,7 @@ export default function Home() {
             {/* MÓDULO 3 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_03_e62530cf.webp" alt="Módulo 3" className="w-full h-full object-cover" />
+                <img src="/images/MD_03.webp" alt="Módulo 3" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -646,7 +610,7 @@ export default function Home() {
             {/* MÓDULO 4 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_04_e7bbdd9e.webp" alt="Módulo 4" className="w-full h-full object-cover" />
+                <img src="/images/MD_04.webp" alt="Módulo 4" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -660,7 +624,7 @@ export default function Home() {
             {/* MÓDULO 5 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_05_cc425b0b.webp" alt="Módulo 5" className="w-full h-full object-cover" />
+                <img src="/images/MD_05.webp" alt="Módulo 5" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -674,7 +638,7 @@ export default function Home() {
             {/* MÓDULO 6 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_06_32c74133.webp" alt="Módulo 6" className="w-full h-full object-cover" />
+                <img src="/images/MD_06.webp" alt="Módulo 6" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -688,7 +652,7 @@ export default function Home() {
             {/* MÓDULO 7 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_07_c9c0a344.webp" alt="Módulo 7" className="w-full h-full object-cover" />
+                <img src="/images/MD_07.webp" alt="Módulo 7" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -702,7 +666,7 @@ export default function Home() {
             {/* MÓDULO 8 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_08_d42d4c7b.webp" alt="Módulo 8" className="w-full h-full object-cover" />
+                <img src="/images/MD_08.webp" alt="Módulo 8" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -716,7 +680,7 @@ export default function Home() {
             {/* MÓDULO 9 */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
               <div className="h-48 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/MD_09_87697764.webp" alt="Módulo 9" className="w-full h-full object-cover" />
+                <img src="/images/MD_09.webp" alt="Módulo 9" className="w-full h-full object-cover" />
               </div>
               <div className="p-6">
 
@@ -797,7 +761,7 @@ export default function Home() {
             {/* Right Column - Photo Space */}
             <div className="bg-gray-800 rounded-lg overflow-hidden h-96 md:h-full flex items-center justify-center">
               <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/fotorenan_95f32cbb.webp"
+                src="/images/foto-renan.webp"
                 alt="Renan Mataveli"
                 className="w-full h-full object-cover"
               />
@@ -817,12 +781,8 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             {/* Diferencial 1 - Mapa de Airdrops */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
-              <div className="h-64 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src="/manus-storage/mapa_airdrops_final_v2_6854e52e.png"
-                  alt="Mapa de Airdrops"
-                  className="w-full h-full object-cover"
-                />
+              <div className="h-64 bg-black flex items-center justify-center p-2">
+                <img src="/images/diferencial-mapa-de-airdrops.png" alt="Mapa de Airdrops" className="h-full w-full object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Mapa de Airdrops</h3>
@@ -832,14 +792,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Diferencial 2 - Melhores Pontos de Compra/Venda */}
+            {/* Diferencial 2 - Pontos de Compra/Venda */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
-              <div className="h-64 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src="/manus-storage/pontos_compra_venda_level_pro_08a6d04e.png"
-                  alt="Acompanhamento para Pontos de Compra/Venda"
-                  className="w-full h-full object-cover"
-                />
+              <div className="h-64 bg-black flex items-center justify-center p-2">
+                <img src="/images/diferencial-compra-venda.png" alt="Acompanhamento para Pontos de Compra/Venda" className="h-full w-full object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Acompanhamento para Pontos de Compra/Venda</h3>
@@ -849,14 +805,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Diferencial 3 - Estrutura de Long/Short */}
+            {/* Diferencial 3 - Suporte com Mentores */}
             <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
-              <div className="h-64 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src="/manus-storage/suporte_mentores_v2_level_pro_e94d1ab9.png"
-                  alt="Suporte com Mentores"
-                  className="w-full h-full object-cover"
-                />
+              <div className="h-64 bg-black flex items-center justify-center p-2">
+                <img src="/images/diferencial-suporte-mentores.png" alt="Suporte com Mentores" className="h-full w-full object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Suporte com Mentores</h3>
@@ -867,28 +819,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Segunda linha com 2 cards */}
-          <div className="grid md:grid-cols-3 gap-8 md:col-span-3" style={{
-            marginBottom: '-5px',
-            marginLeft: '-148px',
-            width: '1172px',
-            height: '518px'
-          }}>
-            <div></div>
+          {/* Segunda linha com 2 cards centralizados */}
+          <div className="flex flex-col md:flex-row justify-center gap-8">
             {/* Diferencial 4 - Lives Semanais */}
-            <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
-              <div className="h-64 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/livesemanal_7ab658ec.webp"
-                  alt="Lives Semanais de Acompanhamento"
-                  className="w-full h-full object-cover"
-                  style={{
-                    marginTop: '25px',
-                    marginRight: '1px',
-                    width: '360px',
-                    height: '284px'
-                  }}
-                />
+            <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group md:w-1/3">
+              <div className="h-64 bg-black flex items-center justify-center p-2">
+                <img src="/images/diferencial-lives-semanais.png" alt="Lives Semanais" className="h-full w-full object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Lives Semanais</h3>
@@ -899,13 +835,9 @@ export default function Home() {
             </div>
 
             {/* Diferencial 5 - Relatórios Semanais */}
-            <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group">
-              <div className="h-64 bg-gradient-to-br from-blue-900/20 to-blue-900/5 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/relatorio_5fa4d9be.webp"
-                  alt="Relatórios Semanais"
-                  className="w-full h-full object-cover"
-                />
+            <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-900 transition group md:w-1/3">
+              <div className="h-64 bg-black flex items-center justify-center p-2">
+                <img src="/images/diferencial-relatorio-semanal.png" alt="Relatórios Semanais" className="h-full w-full object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Relatórios Semanais</h3>
@@ -914,7 +846,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div></div>
           </div>
         </div>
       </section>
@@ -963,7 +894,7 @@ export default function Home() {
                 </ul>
               </div>
               <video width="100%" height="auto" autoPlay muted loop className="rounded-lg flex-shrink-0" style={{maxWidth: '600px', width: '100%', height: 'auto', aspectRatio: '16/9'}}>
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/video-output-ABD87BA9-D0AB-4669-8415-7969E93A531C-1_6ac211ed.mov" type="video/mp4" />
+                <source src="/videos/resultado-trader.mov" type="video/mp4" />
                 Seu navegador nao suporta o elemento de video.
               </video>
             </div>
@@ -1043,7 +974,7 @@ export default function Home() {
                     <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 h-full hover:border-gray-300 transition">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-2xl border border-gray-300 overflow-hidden">
-                          {testimonial.avatar.startsWith('http') ? (
+                          {testimonial.avatar.startsWith('http') || testimonial.avatar.startsWith('/') ? (
                             <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
                           ) : (
                             testimonial.avatar
@@ -1175,8 +1106,8 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Event Card 1 */}
             <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
-              <video className="h-64 md:h-72 lg:h-80 bg-blue-900/20 rounded-xl mb-6 w-full object-cover" controls muted>
-                <source src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663190783268/grfBuNcrvheONDiz.mov" type="video/mp4" />
+              <video className="h-64 md:h-72 lg:h-80 bg-blue-900/20 rounded-xl mb-6 w-full object-cover" autoPlay muted loop controls>
+                <source src="/videos/video-solana-breakpoint.mov" type="video/mp4" />
                 Seu navegador não suporta vídeo HTML5.
               </video>
               <h3 className="text-xl font-black text-blue-400 mb-3">Solana Breakpoint Abu Dhabi</h3>
@@ -1188,7 +1119,7 @@ export default function Home() {
 
             {/* Event Card 2 */}
             <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/evento002_36723391.webp" alt="EBC25 Ambassador" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
+              <img src="/images/evento-EBC25.webp" alt="EBC25 Ambassador" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
               <h3 className="text-xl font-black text-blue-400 mb-3">European Blockchain Convention</h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
                 Embaixador do European Blockchain Convention 2025 em Barcelona.
@@ -1198,7 +1129,7 @@ export default function Home() {
 
             {/* Event Card 3 */}
             <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663190783268/U83KkfBRbFSedDHoLmymnt/evento03_faf7683c.webp" alt="MBA em Criptoativos" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
+              <img src="/images/evento-mba-trevisan.webp" alt="MBA em Criptoativos" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
               <h3 className="text-xl font-black text-blue-400 mb-3">MBA em Criptoativos - Trevisan</h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
                 Docente do MBA em Criptoativos pela Trevisan. Disciplinas: Análise Fundamentalista e Técnica.
