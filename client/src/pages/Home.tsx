@@ -21,8 +21,6 @@ export default function Home() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [totalSignups, setTotalSignups] = useState(1);
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [phoneError, setPhoneError] = useState("");
@@ -151,15 +149,11 @@ export default function Home() {
           setPhoneError('');
         }, 10000);
       } else {
-        // Nova inscrição bem-sucedida - mostrar modal de agradecimento
-        setTotalSignups(totalSignups + 1);
         setShowSuccessModal(true);
-        // Reset form
         setName('');
         setEmail('');
         setPhone('');
         setPhoneError('');
-        setSubmitted(false);
       }
     },
     onError: (error: any) => {
@@ -397,24 +391,6 @@ export default function Home() {
                 CONFIRMAR INSCRIÇÃO
               </button>
             </form>
-            {submitted && (
-              <div className="mt-6 p-6 bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-900/40 rounded-lg text-center">
-                <div className="text-4xl mb-4">✓</div>
-                <h3 className="text-xl font-black text-green-500 mb-3">Obrigado pela inscrição!</h3>
-                <button
-                  onClick={() => {
-                    setSubmitted(false);
-                    setName("");
-                    setEmail("");
-                    setPhone("");
-                    setShowModal(false);
-                  }}
-                  className="w-full bg-green-500 text-black font-black py-2 rounded-lg hover:bg-green-600 transition"
-                >
-                  Fechar
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
