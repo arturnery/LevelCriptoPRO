@@ -87,15 +87,16 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  const isInternational = (value: string) => value.trimStart().startsWith('+');
+
   const formatPhone = (value: string) => {
-    // Remove tudo que não é número
-    let numbers = value.replace(/\D/g, '');
-    
-    // Limitar a 11 dígitos máximo
-    if (numbers.length > 11) {
-      numbers = numbers.slice(0, 11);
+    if (isInternational(value)) {
+      // Internacional: permite + e dígitos, espaços, hífens — sem forçar máscara
+      return value.replace(/[^\d+\s\-()]/g, '').slice(0, 20);
     }
-    
+    // Brasileiro: máscara (XX) 9XXXX-XXXX
+    let numbers = value.replace(/\D/g, '');
+    if (numbers.length > 11) numbers = numbers.slice(0, 11);
     if (numbers.length === 0) return '';
     if (numbers.length <= 2) return `(${numbers}`;
     if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
@@ -103,26 +104,12 @@ export default function Home() {
   };
 
   const validatePhone = (phoneNumber: string) => {
+    if (isInternational(phoneNumber)) {
+      const digits = phoneNumber.replace(/\D/g, '');
+      return digits.length >= 7 && digits.length <= 15;
+    }
     const numbers = phoneNumber.replace(/\D/g, '');
     return numbers.length === 11 && numbers[2] === '9';
-  };
-
-  const getPhoneErrorMessage = (phoneNumber: string) => {
-    const numbers = phoneNumber.replace(/\D/g, '');
-    if (numbers.length === 0) {
-      return 'Por favor, insira seu telefone';
-    }
-    if (numbers.length < 11) {
-      const faltam = 11 - numbers.length;
-      return `Telefone incompleto. Faltam ${faltam} dígito${faltam > 1 ? 's' : ''}. Use o formato: (XX) 9XXXX-XXXX`;
-    }
-    if (numbers.length > 11) {
-      return `Telefone com muitos dígitos. Use o formato: (XX) 9XXXX-XXXX`;
-    }
-    if (numbers[2] !== '9') {
-      return 'Telefone inválido. O 3º dígito deve ser 9. Use o formato: (XX) 9XXXX-XXXX';
-    }
-    return 'Telefone inválido. Use o formato: (XX) 9XXXX-XXXX';
   };
 
   const validateEmail = (emailValue: string) => {
@@ -197,7 +184,11 @@ export default function Home() {
       return;
     }
     if (!validatePhone(phone)) {
-      setPhoneError('Telefone inválido');
+      setPhoneError(
+        isInternational(phone)
+          ? 'Telefone internacional inválido. Use o formato: +55 11 99999-9999'
+          : 'Telefone inválido. Use o formato: (11) 99999-9999'
+      );
       return;
     }
     criarInscricao.mutate({
@@ -246,7 +237,15 @@ export default function Home() {
       <header className="fixed top-0 w-full bg-black/95 backdrop-blur border-b border-blue-900/20 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold">Level Cripto PRO</span>
+            <button
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                history.pushState(null, "", window.location.pathname);
+              }}
+              className="text-xl font-bold hover:text-blue-400 transition cursor-pointer"
+            >
+              Level Cripto PRO
+            </button>
           </div>
           <nav className="hidden md:flex gap-8">
             <a href="#beneficios" className="text-gray-300 hover:text-blue-900 transition">
@@ -367,13 +366,13 @@ export default function Home() {
               <div>
                 <input
                   type="tel"
-                  placeholder="Seu telefone (11) 99999-9999"
+                  placeholder="(11) 99999-9999 ou +1 555 0000"
                   value={phone}
                   onChange={handlePhoneChange}
                   className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition ${
                     phoneError
                       ? 'border-red-500 focus:border-red-500'
-                      : 'border-gray-700 focus:border-blue-900'
+                      : 'border-gray-700 focus:border-green-500'
                   }`}
                   required
                 />
