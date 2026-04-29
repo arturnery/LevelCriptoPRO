@@ -334,6 +334,9 @@ var trpcMiddleware = createExpressMiddleware({
   createContext
 });
 function handler(req, res) {
+  if (!req.path && req.url) {
+    req.path = req.url.split("?")[0];
+  }
   return trpcMiddleware(req, res, () => {
     res.status(404).end();
   });
