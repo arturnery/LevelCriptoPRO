@@ -1,8 +1,12 @@
 {
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
+  "functions": {
+    "api/trpc/[trpc].ts": {
+      "includeFiles": "server/**,shared/**"
+    }
+  },
   "rewrites": [
-    { "source": "/api/trpc/:path*", "destination": "/api/trpc/[trpc]" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
