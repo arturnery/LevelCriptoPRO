@@ -1,14 +1,15 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import type { Request, Response } from "express";
 import { appRouter } from "../../server/routers";
-import { createContext } from "../../server/api-context";
+import { createContext } from "../../server/_core/context";
 
-export const config = { runtime: "nodejs" };
+const trpcMiddleware = createExpressMiddleware({
+  router: appRouter,
+  createContext,
+});
 
-export default function handler(req: Request) {
-  return fetchRequestHandler({
-    endpoint: "/api/trpc",
-    req,
-    router: appRouter,
-    createContext: (opts) => createContext(opts),
+export default function handler(req: Request, res: Response) {
+  return trpcMiddleware(req, res, () => {
+    res.status(404).end();
   });
 }
