@@ -9,6 +9,12 @@ import {
   Youtube,
   Twitter,
   AlertCircle,
+  Users,
+  Headphones,
+  ShieldCheck,
+  FileText,
+  CalendarDays,
+  Lock,
 } from "lucide-react";
 
 interface FAQItem {
@@ -398,69 +404,94 @@ export default function Home() {
 
       {/* Vagas Limitadas Section - Benefícios */}
       <section id="beneficios" className="py-20 px-4 md:px-8 bg-black">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-blue-900/20 via-black to-black border-2 border-blue-900/40 rounded-3xl p-12 md:p-16">
-            {/* Badge */}
-            <div className="flex mb-8">
-              <div className="inline-flex items-center gap-2 bg-orange-900/30 border border-orange-600/50 rounded-full px-4 py-2">
-                <span className="text-orange-500 text-lg">⚡</span>
-                <span className="text-orange-500 font-black text-xs uppercase">VAGAS LIMITADAS POR TURMA</span>
+        <div className="max-w-4xl mx-auto">
+          <div className="border border-blue-900/50 rounded-3xl p-8 md:p-12">
+
+          {/* Badge */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-2 border border-blue-500/60 rounded-full px-5 py-2">
+              <Users size={14} className="text-blue-400" />
+              <span className="text-blue-400 font-bold text-xs uppercase tracking-widest">Turmas com vagas limitadas</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-4xl md:text-6xl font-black mb-6 text-white text-center leading-tight">
+            Qualidade exige<br />
+            <span className="text-blue-500">limite de alunos</span>
+          </h2>
+
+          {/* Description */}
+          <p className="text-gray-400 mb-12 leading-relaxed text-center text-base max-w-2xl mx-auto">
+            Cada turma é limitada para manter suporte próximo, networking qualificado
+            e evolução consistente dos alunos.
+          </p>
+
+          {/* Benefits Grid */}
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            {/* Card 1 */}
+            <div className="flex items-start gap-4 bg-blue-950/30 border border-blue-900/40 rounded-2xl p-5 hover:border-blue-500/50 transition">
+              <div className="flex-shrink-0 w-14 h-14 bg-blue-900/40 rounded-xl flex items-center justify-center">
+                <Headphones size={26} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-black text-white mb-1 text-base">Acompanhamento próximo</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Suporte direto para dúvidas, estratégias e evolução dentro do mercado.</p>
               </div>
             </div>
-            
-            {/* Title */}
-            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
-              Qualidade exige<br />
-              <span className="text-blue-500">limite de alunos</span>
-            </h2>
-            
-            {/* Description */}
-            <p className="text-base text-gray-400 mb-12 leading-relaxed max-w-2xl">
-              Limitamos as vagas de cada turma para garantir uma experiência real, não somos mais um curso com milhares de alunos invisíveis.
+
+            {/* Card 2 */}
+            <div className="flex items-start gap-4 bg-blue-950/30 border border-blue-900/40 rounded-2xl p-5 hover:border-blue-500/50 transition">
+              <div className="flex-shrink-0 w-14 h-14 bg-blue-900/40 rounded-xl flex items-center justify-center">
+                <Users size={26} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-black text-white mb-1 text-base">Comunidade qualificada</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Ambiente com alunos comprometidos, troca de experiências e networking real.</p>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="flex items-start gap-4 bg-blue-950/30 border border-blue-900/40 rounded-2xl p-5 hover:border-blue-500/50 transition">
+              <div className="flex-shrink-0 w-14 h-14 bg-blue-900/40 rounded-xl flex items-center justify-center">
+                <ShieldCheck size={26} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-black text-white mb-1 text-base">Mentoria ativa</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Moderadores e mentores presentes para orientar decisões e corrigir rotas.</p>
+              </div>
+            </div>
+
+            {/* Card 4 */}
+            <div className="flex items-start gap-4 bg-blue-950/30 border border-blue-900/40 rounded-2xl p-5 hover:border-blue-500/50 transition">
+              <div className="flex-shrink-0 w-14 h-14 bg-blue-900/40 rounded-xl flex items-center justify-center">
+                <FileText size={26} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-black text-white mb-1 text-base">Conteúdos e atualizações</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Bônus, análises e materiais atualizados conforme o mercado evolui.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Banner */}
+          <div className="bg-blue-950/30 border border-blue-900/40 rounded-2xl px-8 py-6 text-center">
+            <p className="text-gray-300 text-sm mb-5 flex items-center justify-center gap-2">
+              <CalendarDays size={16} className="text-blue-400" />
+              Entre agora e garanta acesso à <span className="text-white font-bold">próxima turma.</span>
             </p>
-            
-            {/* Benefits Grid */}
-            <div className="grid md:grid-cols-2 gap-6 mb-12">
-              {/* Card 1 */}
-              <div className="bg-blue-900/20 border border-blue-900/40 rounded-xl p-6 hover:border-blue-900/60 transition">
-                <div className="text-blue-400 text-2xl mb-4">👥</div>
-                <h3 className="font-black text-white mb-2 text-base">Suporte personalizado</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">Você não é um número, é parte de uma comunidade genuína com atenção real.</p>
-              </div>
-              
-              {/* Card 2 */}
-              <div className="bg-blue-900/20 border border-blue-900/40 rounded-xl p-6 hover:border-blue-900/60 transition">
-                <div className="text-blue-400 text-2xl mb-4">💬</div>
-                <h3 className="font-black text-white mb-2 text-base">Comunidade ativa</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">Networking real com outros alunos e oportunidades que surgem da troca diária.</p>
-              </div>
-              
-              {/* Card 3 */}
-              <div className="bg-blue-900/20 border border-blue-900/40 rounded-xl p-6 hover:border-blue-900/60 transition">
-                <div className="text-yellow-500 text-2xl mb-4">⏰</div>
-                <h3 className="font-black text-white mb-2 text-base">Moderadores dedicados</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">Tempo real para suas dúvidas e desafios, não respostas automáticas genéricas.</p>
-              </div>
-              
-              {/* Card 4 */}
-              <div className="bg-blue-900/20 border border-blue-900/40 rounded-xl p-6 hover:border-blue-900/60 transition">
-                <div className="text-green-500 text-2xl mb-4">⭐</div>
-                <h3 className="font-black text-white mb-2 text-base">Conteúdo exclusivo</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">Bônus e atualizações contínuas que todos os alunos da turma recebem.</p>
-              </div>
-            </div>
-            
-            {/* CTA Section */}
-            <div className="text-center">
-              <p className="text-gray-400 text-sm mb-6">Não perca essa oportunidade exclusiva</p>
-              <button
-                onClick={() => setShowModal(true)}
-                className="w-full bg-green-500 text-white font-black py-4 px-8 rounded-lg hover:bg-green-600 transition transform hover:scale-105 shadow-lg mb-4"
-              >
-                GARANTIR MINHA VAGA AGORA
-              </button>
-              <p className="text-red-500 text-xs font-bold">● Poucas vagas restantes nesta turma</p>
-            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="w-full bg-green-500 text-black font-black py-4 px-8 rounded-xl hover:bg-green-400 transition transform hover:scale-105 text-lg flex items-center justify-center gap-3 mb-4"
+            >
+              QUERO ENTRAR PARA A PRÓXIMA TURMA
+              <ArrowRight size={20} />
+            </button>
+            <p className="text-red-500 text-xs font-bold text-center">
+              ● Poucas vagas restantes nesta turma
+            </p>
+          </div>
+
           </div>
         </div>
       </section>
