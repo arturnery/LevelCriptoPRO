@@ -244,6 +244,6 @@ Cobertura dos testes:
 
 **Artur Nery**
 
-- LinkedIn: [linkedin.com/in/arturnery](https://linkedin.com/in/arturnery)
+- LinkedIn: https://www.linkedin.com/in/artur-matoso-nery-84a4971a9/
 - E-mail: arturnery97@gmail.com
 - GitHub: [@arturnery](https://github.com/arturnery)
