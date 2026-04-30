@@ -31,6 +31,14 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const testimonials = [
@@ -66,12 +74,14 @@ export default function Home() {
     }
   ];
 
+  const testimonialSteps = isMobile ? testimonials.length : testimonials.length - 1;
+
   const nextTestimonial = () => {
-    setCurrentTestimonialIndex((prev) => (prev + 1) % (testimonials.length - 1));
+    setCurrentTestimonialIndex((prev) => (prev + 1) % testimonialSteps);
   };
 
   const prevTestimonial = () => {
-    setCurrentTestimonialIndex((prev) => (prev - 1 + (testimonials.length - 1)) % (testimonials.length - 1));
+    setCurrentTestimonialIndex((prev) => (prev - 1 + testimonialSteps) % testimonialSteps);
   };
   // Data-alvo da próxima turma — altere esta data quando abrir nova turma
   const TARGET_DATE = new Date("2025-06-01T00:00:00");
@@ -515,7 +525,7 @@ export default function Home() {
               </div>
               <h3 className="text-4xl md:text-5xl font-black mb-10 text-white">A primeira aula começa em</h3>
               
-              <div className="flex gap-4 md:gap-6">
+              <div className="grid grid-cols-2 gap-4 md:flex md:gap-6">
                 <div className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
                   <div className="text-4xl md:text-5xl font-black text-white mb-2">
                     {String(timeLeft.days).padStart(2, '0')}
@@ -543,7 +553,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex justify-center md:justify-end md:-mr-32 md:-mb-24 relative z-20">
+            <div className="hidden md:flex justify-center md:justify-end md:-mr-32 md:-mb-24 relative z-20">
               <img 
                 src="/images/mockup-desktop.png"
                 alt="Level Cripto PRO Desktop" 
@@ -865,7 +875,7 @@ export default function Home() {
           
           {/* Resultados de Trades */}
           <div className="mb-16">
-            <div className="flex items-stretch gap-12">
+            <div className="flex flex-col md:flex-row items-stretch gap-8 md:gap-12">
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-12">
                   <svg width="64" height="64" viewBox="10 0 120 100" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
@@ -899,7 +909,8 @@ export default function Home() {
                   </li>
                 </ul>
               </div>
-              <video width="100%" height="auto" autoPlay muted loop className="rounded-lg flex-shrink-0" style={{maxWidth: '600px', width: '100%', height: 'auto', aspectRatio: '16/9'}}>
+              <video autoPlay muted loop className="rounded-lg w-full md:w-[600px] md:flex-shrink-0" style={{height: 'auto', aspectRatio: '16/9'}}>
+
                 <source src="/videos/resultado-trader.mov" type="video/mp4" />
                 Seu navegador nao suporta o elemento de video.
               </video>
@@ -972,11 +983,11 @@ export default function Home() {
               <div
                 className="flex transition-transform duration-500 ease-out"
                 style={{
-                  transform: `translateX(-${currentTestimonialIndex * 50}%)`
+                  transform: `translateX(-${currentTestimonialIndex * (isMobile ? 100 : 50)}%)`
                 }}
               >
                 {testimonials.map((testimonial, index) => (
-                  <div key={index} className="w-1/2 flex-shrink-0 px-4">
+                  <div key={index} className="w-full md:w-1/2 flex-shrink-0 px-4">
                     <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 h-full hover:border-gray-300 transition">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-2xl border border-gray-300 overflow-hidden">
@@ -1021,7 +1032,7 @@ export default function Home() {
             
             {/* Dots */}
             <div className="flex justify-center gap-2 mt-8">
-              {[...Array(testimonials.length - 1)].map((_, i) => (
+              {[...Array(testimonialSteps)].map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentTestimonialIndex(i)}
@@ -1106,12 +1117,12 @@ export default function Home() {
 
       {/* EVENTOS E PARTICIPAÇÃO ESPECIAL Section */}
       <section className="py-20 px-4 md:px-8 bg-black">
-        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-900/20 via-black to-black border-2 border-blue-900/40 rounded-3xl p-12 md:p-16">
-          <h2 className="text-5xl md:text-6xl font-black mb-12 text-center text-white">EVENTOS E PARTICIPAÇÃO ESPECIAL</h2>
+        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-900/20 via-black to-black border-2 border-blue-900/40 rounded-3xl p-6 md:p-12 lg:p-16">
+          <h2 className="text-2xl md:text-5xl lg:text-6xl font-black mb-8 md:mb-12 text-center text-white">EVENTOS E PARTICIPAÇÃO ESPECIAL</h2>
           
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Event Card 1 */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
+            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-5 md:p-8 hover:border-blue-900/60 transition">
               <video className="h-64 md:h-72 lg:h-80 bg-blue-900/20 rounded-xl mb-6 w-full object-cover" autoPlay muted loop controls>
                 <source src="/videos/video-solana-breakpoint.mov" type="video/mp4" />
                 Seu navegador não suporta vídeo HTML5.
@@ -1124,7 +1135,7 @@ export default function Home() {
             </div>
 
             {/* Event Card 2 */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
+            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-5 md:p-8 hover:border-blue-900/60 transition">
               <img src="/images/evento-EBC25.webp" alt="EBC25 Ambassador" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
               <h3 className="text-xl font-black text-blue-400 mb-3">European Blockchain Convention</h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
@@ -1134,7 +1145,7 @@ export default function Home() {
             </div>
 
             {/* Event Card 3 */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-8 hover:border-blue-900/60 transition">
+            <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-2 border-blue-900/40 rounded-2xl p-5 md:p-8 hover:border-blue-900/60 transition">
               <img src="/images/evento-mba-trevisan.webp" alt="MBA em Criptoativos" className="h-64 md:h-72 lg:h-80 rounded-xl mb-6 w-full object-cover object-center" />
               <h3 className="text-xl font-black text-blue-400 mb-3">MBA em Criptoativos - Trevisan</h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
