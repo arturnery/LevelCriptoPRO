@@ -84,7 +84,7 @@ export default function Home() {
     setCurrentTestimonialIndex((prev) => (prev - 1 + testimonialSteps) % testimonialSteps);
   };
   // Data-alvo da próxima turma — altere esta data quando abrir nova turma
-  const TARGET_DATE = new Date("2025-06-01T00:00:00");
+  const TARGET_DATE = new Date("2026-06-05T00:00:00");
 
   const calcTimeLeft = () => {
     const diff = Math.max(0, TARGET_DATE.getTime() - Date.now());
@@ -515,7 +515,7 @@ export default function Home() {
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-end">
             <div>
               <div className="flex mb-6">
                 <div className="inline-flex items-center gap-2 border-2 border-white rounded-full px-5 py-2">
@@ -554,16 +554,16 @@ export default function Home() {
             </div>
             
             <div className="hidden md:flex justify-center md:justify-end md:-mr-32 md:-mb-24 relative z-20">
-              <img 
+              <img
                 src="/images/mockup-desktop.png"
-                alt="Level Cripto PRO Desktop" 
-                className="w-full h-auto" 
+                alt="Level Cripto PRO Desktop"
+                className="w-full h-auto"
                 style={{
-                  width: '599px',
-                  height: '333px',
+                  width: '750px',
+                  height: 'auto',
                   marginTop: '-248px',
                   marginRight: '100px',
-                  marginBottom: '47px',
+                  marginBottom: '32px',
                   marginLeft: '-7px',
                   filter: 'drop-shadow(0 20px 40px rgba(0, 0, 0, 0.4)) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3))'
                 }}
@@ -919,24 +919,24 @@ export default function Home() {
 
           {/* Resultados de Airdrops */}
           <div>
-            <div className="flex items-center gap-4 mb-12">
-              <svg width="64" height="64" viewBox="440 55 120 115" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-                <path d="M500 65 Q460 65 455 100 Q460 105 500 108 Q540 105 545 100 Q540 65 500 65Z" fill="#7C3AED" opacity="0.25" stroke="#7C3AED" strokeWidth="2"/>
-                <line x1="460" y1="100" x2="490" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
-                <line x1="478" y1="107" x2="492" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
-                <line x1="522" y1="107" x2="508" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
-                <line x1="540" y1="100" x2="510" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
-                <rect x="487" y="135" width="26" height="20" rx="4" fill="#7C3AED"/>
-                <text x="500" y="149" textAnchor="middle" fontFamily="sans-serif" fontSize="9" fontWeight="700" fill="#fff">$</text>
-                <circle cx="462" cy="150" r="8" fill="none" stroke="#F59E0B" strokeWidth="1.5"/>
-                <text x="462" y="154" textAnchor="middle" fontFamily="sans-serif" fontSize="8" fill="#F59E0B">$</text>
-                <circle cx="540" cy="145" r="8" fill="none" stroke="#F59E0B" strokeWidth="1.5"/>
-                <text x="540" y="149" textAnchor="middle" fontFamily="sans-serif" fontSize="8" fill="#F59E0B">$</text>
-              </svg>
-              <h3 className="text-4xl font-black text-white leading-none">Resultados de Airdrops</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div>
+            <div className="flex flex-col md:flex-row items-stretch gap-8 md:gap-12">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-12">
+                  <svg width="64" height="64" viewBox="440 55 120 115" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+                    <path d="M500 65 Q460 65 455 100 Q460 105 500 108 Q540 105 545 100 Q540 65 500 65Z" fill="#7C3AED" opacity="0.25" stroke="#7C3AED" strokeWidth="2"/>
+                    <line x1="460" y1="100" x2="490" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
+                    <line x1="478" y1="107" x2="492" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
+                    <line x1="522" y1="107" x2="508" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
+                    <line x1="540" y1="100" x2="510" y2="135" stroke="#7C3AED" strokeWidth="1.5" opacity="0.8"/>
+                    <rect x="487" y="135" width="26" height="20" rx="4" fill="#7C3AED"/>
+                    <text x="500" y="149" textAnchor="middle" fontFamily="sans-serif" fontSize="9" fontWeight="700" fill="#fff">$</text>
+                    <circle cx="462" cy="150" r="8" fill="none" stroke="#F59E0B" strokeWidth="1.5"/>
+                    <text x="462" y="154" textAnchor="middle" fontFamily="sans-serif" fontSize="8" fill="#F59E0B">$</text>
+                    <circle cx="540" cy="145" r="8" fill="none" stroke="#F59E0B" strokeWidth="1.5"/>
+                    <text x="540" y="149" textAnchor="middle" fontFamily="sans-serif" fontSize="8" fill="#F59E0B">$</text>
+                  </svg>
+                  <h3 className="text-4xl font-black text-white leading-none">Resultados de Airdrops</h3>
+                </div>
                 <p className="text-white text-lg mb-8 leading-relaxed font-semibold">
                   Com o mapa mental e as estratégias de farm de airdrops ensinadas no curso, nossos alunos conseguem identificar e participar de airdrops lucrativos:
                 </p>
@@ -955,15 +955,10 @@ export default function Home() {
                   </li>
                 </ul>
               </div>
-              <div className="bg-gray-800 rounded-lg p-8 flex items-center justify-center min-h-64">
-                <div className="text-center">
-                  <p className="text-gray-400 mb-4">Vídeo dos Resultados de Airdrops</p>
-                  <div className="w-full aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-4xl">▶️</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-4">(em breve)</p>
-                </div>
-              </div>
+              <video autoPlay muted loop className="rounded-lg w-full md:w-[600px] md:flex-shrink-0" style={{height: 'auto', aspectRatio: '16/9'}}>
+                <source src="/videos/resultado-airdrop.mov" type="video/mp4" />
+                Seu navegador nao suporta o elemento de video.
+              </video>
             </div>
           </div>
         </div>
