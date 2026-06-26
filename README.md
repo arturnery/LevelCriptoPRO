@@ -14,7 +14,7 @@ Landing page fullstack para o curso **Level Cripto PRO**, com sistema de captaç
 
 > 🔗 https://www.levelcripto.com.br/
 
-![Screenshot da landing page](client/public/images/hero-bg.png)
+![Screenshot da landing page](client/public/images/demo.png)
 
 ---
 
