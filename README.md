@@ -12,7 +12,7 @@ Landing page fullstack para o curso **Level Cripto PRO**, com sistema de captaç
 
 ## Demo
 
-> 🔗 [level-cripto-pro.vercel.app](https://level-cripto-pro.vercel.app)
+> 🔗 https://www.levelcripto.com.br/
 
 ![Screenshot da landing page](client/public/images/hero-bg.png)
 
