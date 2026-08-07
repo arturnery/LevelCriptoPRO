@@ -1237,10 +1237,9 @@ export default function Home() {
       </footer>
       
       {/* Success Modal */}
-      <SuccessModal 
-        isOpen={showSuccessModal} 
+      <SuccessModal
+        isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        autoCloseDuration={5000}
       />
     </div>
   );

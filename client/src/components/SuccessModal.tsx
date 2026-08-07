@@ -1,27 +1,12 @@
 import { Check } from "lucide-react";
-import { useEffect } from "react";
 
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
-  autoCloseDuration?: number;
 }
 
-export default function SuccessModal({ 
-  isOpen, 
-  onClose, 
-  autoCloseDuration = 5000 
-}: SuccessModalProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const timer = setTimeout(() => {
-      onClose();
-    }, autoCloseDuration);
-
-    return () => clearTimeout(timer);
-  }, [isOpen, autoCloseDuration, onClose]);
-
+export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
+  // Fecha só quando a pessoa clicar em Fechar (ou no fundo); sem timer automático.
   const handleClose = () => {
     onClose();
     // Scroll to top of page
@@ -70,11 +55,6 @@ export default function SuccessModal({
         >
           Fechar
         </button>
-
-        {/* Auto-close hint */}
-        <p className="text-xs text-gray-400 text-center mt-4">
-          Este popup fechará automaticamente em alguns segundos
-        </p>
       </div>
     </div>
   );
