@@ -154,6 +154,9 @@ export default function Home() {
           setPhoneError('');
         }, 10000);
       } else {
+        // Fecha o modal de inscrição antes de abrir o de sucesso. Sem isto, o
+        // Dialog do Radix (portal no fim do body) fica por cima do SuccessModal.
+        setShowModal(false);
         setShowSuccessModal(true);
         setName('');
         setEmail('');
