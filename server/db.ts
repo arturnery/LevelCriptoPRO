@@ -88,6 +88,24 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+/**
+ * Decide o resultado a partir das linhas que o insert e o select devolveram.
+ * Função pura, sem I/O — é o núcleo testável da detecção de duplicata.
+ *
+ * `inserted` não-vazio => o insert gravou, e-mail é novo.
+ * `inserted` vazio     => onConflictDoNothing não gravou, e-mail já existia;
+ *                         o registro atual vem de `existing`.
+ */
+export function interpretInsert(
+  inserted: Inscricao[],
+  existing: Inscricao[]
+): { inscricao: Inscricao | null; isDuplicate: boolean } {
+  if (inserted.length > 0) {
+    return { inscricao: inserted[0], isDuplicate: false };
+  }
+  return { inscricao: existing.length > 0 ? existing[0] : null, isDuplicate: true };
+}
+
 export async function createInscricao(nome: string, email: string, telefone: string): Promise<{ inscricao: Inscricao | null; isDuplicate: boolean }> {
   const db = getDb();
   if (!db) {
@@ -96,30 +114,25 @@ export async function createInscricao(nome: string, email: string, telefone: str
   }
 
   try {
-    await db.insert(inscricoes).values({ nome, email, telefone });
+    // onConflictDoNothing + returning: o caminho feliz resolve em uma única ida
+    // ao banco e devolve a linha direto, sem o select extra de antes. A duplicata
+    // deixa de depender de parsing da string de erro (que era MySQL, não Postgres).
+    const inserted = await db
+      .insert(inscricoes)
+      .values({ nome, email, telefone })
+      .onConflictDoNothing({ target: inscricoes.email })
+      .returning();
 
-    const inscricaoCriada = await db.select().from(inscricoes)
-      .where(eq(inscricoes.email, email))
-      .limit(1);
-
-    return { inscricao: inscricaoCriada.length > 0 ? inscricaoCriada[0] : null, isDuplicate: false };
-  } catch (error: any) {
-    const causeMessage = error?.cause?.message || '';
-    const errorMessage = error?.message || '';
-
-    const isDuplicateEmail =
-      causeMessage.includes('duplicate key') ||
-      errorMessage.includes('duplicate key') ||
-      error?.code === '23505';
-
-    if (isDuplicateEmail) {
-      console.error("[Database] Duplicate email detected:", email);
-      const existing = await db.select().from(inscricoes)
-        .where(eq(inscricoes.email, email))
-        .limit(1);
-      return { inscricao: existing.length > 0 ? existing[0] : null, isDuplicate: true };
+    if (inserted.length > 0) {
+      return interpretInsert(inserted, []);
     }
 
+    // Conflito de e-mail: nada foi gravado, buscar o registro que já existe.
+    const existing = await db.select().from(inscricoes)
+      .where(eq(inscricoes.email, email))
+      .limit(1);
+    return interpretInsert([], existing);
+  } catch (error) {
     console.error("[Database] Failed to create inscricao:", error);
     throw error;
   }

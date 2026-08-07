@@ -7,6 +7,33 @@ var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
 var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
+// shared/validation.ts
+import { z } from "zod";
+function isInternational(value) {
+  return value.trimStart().startsWith("+");
+}
+function onlyDigits(value) {
+  return value.replace(/\D/g, "");
+}
+function isValidPhone(value) {
+  const digits = onlyDigits(value);
+  if (isInternational(value)) {
+    return digits.length >= 7 && digits.length <= 15;
+  }
+  return digits.length === 11 && digits[2] === "9";
+}
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+var nomeSchema = z.string().min(1, "Nome obrigat\xF3rio");
+var emailSchema = z.string().refine(isValidEmail, "Email inv\xE1lido");
+var telefoneSchema = z.string().refine(isValidPhone, "Telefone inv\xE1lido");
+var criarInscricaoSchema = z.object({
+  nome: nomeSchema,
+  email: emailSchema,
+  telefone: telefoneSchema
+});
+
 // server/_core/cookies.ts
 function isSecureRequest(req) {
   if (req.protocol === "https") return true;
@@ -26,7 +53,7 @@ function getSessionCookieOptions(req) {
 }
 
 // server/_core/systemRouter.ts
-import { z } from "zod";
+import { z as z2 } from "zod";
 
 // server/_core/notification.ts
 async function notifyOwner(_payload) {
@@ -72,16 +99,16 @@ var adminProcedure = t.procedure.use(
 // server/_core/systemRouter.ts
 var systemRouter = router({
   health: publicProcedure.input(
-    z.object({
-      timestamp: z.number().min(0, "timestamp cannot be negative")
+    z2.object({
+      timestamp: z2.number().min(0, "timestamp cannot be negative")
     })
   ).query(() => ({
     ok: true
   })),
   notifyOwner: adminProcedure.input(
-    z.object({
-      title: z.string().min(1, "title is required"),
-      content: z.string().min(1, "content is required")
+    z2.object({
+      title: z2.string().min(1, "title is required"),
+      content: z2.string().min(1, "content is required")
     })
   ).mutation(async ({ input }) => {
     const delivered = await notifyOwner(input);
@@ -149,6 +176,12 @@ async function getUserByOpenId(openId) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
+function interpretInsert(inserted, existing) {
+  if (inserted.length > 0) {
+    return { inscricao: inserted[0], isDuplicate: false };
+  }
+  return { inscricao: existing.length > 0 ? existing[0] : null, isDuplicate: true };
+}
 async function createInscricao(nome, email, telefone) {
   const db = getDb();
   if (!db) {
@@ -156,18 +189,13 @@ async function createInscricao(nome, email, telefone) {
     return { inscricao: null, isDuplicate: false };
   }
   try {
-    await db.insert(inscricoes).values({ nome, email, telefone });
-    const inscricaoCriada = await db.select().from(inscricoes).where(eq(inscricoes.email, email)).limit(1);
-    return { inscricao: inscricaoCriada.length > 0 ? inscricaoCriada[0] : null, isDuplicate: false };
-  } catch (error) {
-    const causeMessage = error?.cause?.message || "";
-    const errorMessage = error?.message || "";
-    const isDuplicateEmail = causeMessage.includes("duplicate key") || errorMessage.includes("duplicate key") || error?.code === "23505";
-    if (isDuplicateEmail) {
-      console.error("[Database] Duplicate email detected:", email);
-      const existing = await db.select().from(inscricoes).where(eq(inscricoes.email, email)).limit(1);
-      return { inscricao: existing.length > 0 ? existing[0] : null, isDuplicate: true };
+    const inserted = await db.insert(inscricoes).values({ nome, email, telefone }).onConflictDoNothing({ target: inscricoes.email }).returning();
+    if (inserted.length > 0) {
+      return interpretInsert(inserted, []);
     }
+    const existing = await db.select().from(inscricoes).where(eq(inscricoes.email, email)).limit(1);
+    return interpretInsert([], existing);
+  } catch (error) {
     console.error("[Database] Failed to create inscricao:", error);
     throw error;
   }
@@ -187,7 +215,6 @@ async function listInscricoes() {
 }
 
 // server/routers.ts
-import { z as z2 } from "zod";
 var appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -225,13 +252,7 @@ var appRouter = router({
      * const { mutate } = trpc.inscricoes.criar.useMutation();
      * mutate({ email: 'teste@example.com', telefone: '(11) 99999-9999' });
      */
-    criar: publicProcedure.input(
-      z2.object({
-        nome: z2.string().min(1, "Nome obrigat\xF3rio"),
-        email: z2.string().email("Email inv\xE1lido"),
-        telefone: z2.string().min(10, "Telefone inv\xE1lido")
-      })
-    ).mutation(async ({ input }) => {
+    criar: publicProcedure.input(criarInscricaoSchema).mutation(async ({ input }) => {
       const result = await createInscricao(input.nome, input.email, input.telefone);
       if (!result || !result.inscricao) {
         throw new Error("Falha ao criar inscri\xE7\xE3o");

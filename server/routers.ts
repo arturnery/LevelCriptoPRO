@@ -1,9 +1,9 @@
 import { COOKIE_NAME } from "../shared/const";
+import { criarInscricaoSchema } from "../shared/validation";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { createInscricao, listInscricoes } from "./db";
-import { z } from "zod";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -44,13 +44,9 @@ export const appRouter = router({
      * mutate({ email: 'teste@example.com', telefone: '(11) 99999-9999' });
      */
     criar: publicProcedure
-      .input(
-        z.object({
-          nome: z.string().min(1, "Nome obrigatório"),
-          email: z.string().email("Email inválido"),
-          telefone: z.string().min(10, "Telefone inválido"),
-        })
-      )
+      // Schema compartilhado com o cliente (shared/validation.ts): valida DADOS,
+      // não a string mascarada de apresentação. Um curl com "aaaaaaaaaa" reprova.
+      .input(criarInscricaoSchema)
       .mutation(async ({ input }) => {
         const result = await createInscricao(input.nome, input.email, input.telefone);
         if (!result || !result.inscricao) {

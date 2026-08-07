@@ -1,129 +1,48 @@
 import { describe, it, expect } from 'vitest';
+import { interpretInsert } from './db';
+import type { Inscricao } from '../drizzle/schema';
 
 /**
- * Test for duplicate email error handling
- * Ensures that duplicate email errors are caught and converted to user-friendly messages
+ * Exercita o interpretInsert REAL de db.ts — o núcleo da detecção de duplicata
+ * agora que ela é estrutural (onConflictDoNothing + returning), e não mais
+ * parsing da string de erro do banco.
  */
 
-describe('Duplicate Email Error Handling', () => {
-  describe('Error detection', () => {
-    it('should detect duplicate email error from database', () => {
-      const dbError = {
-        message: "Duplicate entry 'test@example.com' for key 'inscricoes.inscricoes_email_unique'"
-      };
-      
-      const isDuplicate = dbError.message?.includes('Duplicate entry') && 
-                         dbError.message?.includes('email');
-      expect(isDuplicate).toBe(true);
-    });
+const inscricao = (over: Partial<Inscricao> = {}): Inscricao => ({
+  id: 1,
+  nome: 'Renan',
+  email: 'arturnery97@gmail.com',
+  telefone: '11999999999',
+  criadoEm: new Date(),
+  ...over,
+});
 
-    it('should convert database error to user-friendly message', () => {
-      const dbError = new Error("Duplicate entry 'test@example.com' for key 'inscricoes.inscricoes_email_unique'");
-      
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      if (dbError.message?.includes('Duplicate entry') && dbError.message?.includes('email')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      }
-      
-      expect(mensagemErro).toBe('Email já inscrito. Obrigado pelo interesse!');
-    });
+describe('interpretInsert', () => {
+  it('e-mail novo: returning traz a linha, isDuplicate false', () => {
+    const nova = inscricao();
+    const r = interpretInsert([nova], []);
+    expect(r.isDuplicate).toBe(false);
+    expect(r.inscricao).toBe(nova);
   });
 
-  describe('Frontend error message handling', () => {
-    it('should show "Email já inscrito" when error contains "ja inscrito"', () => {
-      const error = { message: 'Email ja inscrito' };
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      if (error.message?.includes('ja inscrito') || error.message?.includes('already exists')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      }
-      
-      expect(mensagemErro).toBe('Email já inscrito. Obrigado pelo interesse!');
-    });
-
-    it('should show "Email já inscrito" when error contains "already exists"', () => {
-      const error = { message: 'Email already exists' };
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      if (error.message?.includes('ja inscrito') || error.message?.includes('already exists')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      }
-      
-      expect(mensagemErro).toBe('Email já inscrito. Obrigado pelo interesse!');
-    });
-
-    it('should show "Email inválido" for other email errors', () => {
-      const error = { message: 'Email format is invalid' };
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      if (error.message?.includes('ja inscrito') || error.message?.includes('already exists')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      } else if (error.message?.toLowerCase().includes('email')) {
-        mensagemErro = 'Email inválido';
-      }
-      
-      expect(mensagemErro).toBe('Email inválido');
-    });
-
-    it('should show generic error for unknown errors', () => {
-      const error = { message: 'Unknown database error' };
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      if (error.message?.includes('ja inscrito') || error.message?.includes('already exists')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      } else if (error.message?.includes('email')) {
-        mensagemErro = 'Email inválido';
-      }
-      
-      expect(mensagemErro).toBe('Erro ao criar inscrição. Tente novamente.');
-    });
+  it('e-mail existente: returning vazio, isDuplicate true e devolve o registro atual', () => {
+    const existente = inscricao({ id: 42 });
+    const r = interpretInsert([], [existente]);
+    expect(r.isDuplicate).toBe(true);
+    expect(r.inscricao).toBe(existente);
   });
 
-  describe('Real-world scenarios', () => {
-    it('should handle the user case: arturnery97@gmail.com already registered', () => {
-      const error = { message: 'Email ja inscrito' };
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      if (error.message?.includes('ja inscrito') || error.message?.includes('already exists')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      }
-      
-      expect(mensagemErro).toBe('Email já inscrito. Obrigado pelo interesse!');
-    });
-
-    it('should provide friendly message instead of technical error', () => {
-      const technicalError = "Duplicate entry 'arturnery97@gmail.com' for key 'inscricoes.inscricoes_email_unique'";
-      const friendlyMessage = 'Email já inscrito. Obrigado pelo interesse!';
-      
-      expect(friendlyMessage).not.toContain('Duplicate entry');
-      expect(friendlyMessage).not.toContain('inscricoes_email_unique');
-      expect(friendlyMessage).toContain('Email');
-      expect(friendlyMessage).toContain('inscrito');
-    });
+  it('conflito sem registro recuperável: isDuplicate true, inscricao null', () => {
+    const r = interpretInsert([], []);
+    expect(r.isDuplicate).toBe(true);
+    expect(r.inscricao).toBeNull();
   });
 
-  describe('Error message clarity', () => {
-    it('should not expose database implementation details', () => {
-      const friendlyMessage = 'Email já inscrito. Obrigado pelo interesse!';
-      
-      expect(friendlyMessage).not.toContain('Duplicate');
-      expect(friendlyMessage).not.toContain('key');
-      expect(friendlyMessage).not.toContain('unique');
-      expect(friendlyMessage).not.toContain('inscricoes');
-    });
-
-    it('should be polite and appreciative', () => {
-      const message = 'Email já inscrito. Obrigado pelo interesse!';
-      
-      expect(message).toContain('Obrigado');
-      expect(message).toContain('interesse');
-    });
-
-    it('should be clear about what went wrong', () => {
-      const message = 'Email já inscrito. Obrigado pelo interesse!';
-      
-      expect(message).toContain('Email');
-      expect(message).toContain('inscrito');
-    });
+  it('a linha nova tem precedência sobre a lista de existentes', () => {
+    const nova = inscricao({ id: 1 });
+    const outra = inscricao({ id: 2 });
+    const r = interpretInsert([nova], [outra]);
+    expect(r.inscricao).toBe(nova);
+    expect(r.isDuplicate).toBe(false);
   });
 });
