@@ -1,6 +1,23 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import SuccessModal from "@/components/SuccessModal";
+import {
+  formatPhone,
+  isInternational,
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+  phoneErrorMessage,
+} from "@shared/validation";
+import { mensagemDeErro } from "@shared/formError";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
   ArrowRight,
@@ -21,6 +38,12 @@ interface FAQItem {
   question: string;
   answer: string;
 }
+
+// Anel de foco visível: a borda colorida sozinha é sinal só por cor (WCAG 2.4.7).
+const FOCO_ANEL =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900";
+
+const CAMPO = `${FOCO_ANEL} w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 transition focus:border-green-500`;
 
 export default function Home() {
 
@@ -83,12 +106,18 @@ export default function Home() {
   const prevTestimonial = () => {
     setCurrentTestimonialIndex((prev) => (prev - 1 + testimonialSteps) % testimonialSteps);
   };
-  // Data-alvo da próxima turma — altere esta data quando abrir nova turma
+  // Data-alvo da próxima turma — altere esta data quando abrir nova turma.
+  // Depois que a data passa, a seção troca sozinha para a chamada sem data:
+  // ela nunca exibe 00:00:00:00, mesmo que ninguém lembre de atualizar aqui.
   const TARGET_DATE = new Date("2026-06-05T00:00:00");
 
   const calcTimeLeft = () => {
-    const diff = Math.max(0, TARGET_DATE.getTime() - Date.now());
+    const diff = TARGET_DATE.getTime() - Date.now();
+    if (diff <= 0) {
+      return { expired: true, days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
     return {
+      expired: false,
       days: Math.floor(diff / (1000 * 60 * 60 * 24)),
       hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((diff / (1000 * 60)) % 60),
@@ -99,43 +128,16 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(calcTimeLeft);
 
   useEffect(() => {
+    // Sem contagem a fazer, não há por que manter um timer rodando.
+    if (timeLeft.expired) return;
     const timer = setInterval(() => setTimeLeft(calcTimeLeft()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [timeLeft.expired]);
 
-  const isInternational = (value: string) => value.trimStart().startsWith('+');
-
-  const formatPhone = (value: string) => {
-    if (isInternational(value)) {
-      // Internacional: permite + e dígitos, espaços, hífens — sem forçar máscara
-      return value.replace(/[^\d+\s\-()]/g, '').slice(0, 20);
-    }
-    // Brasileiro: máscara (XX) 9XXXX-XXXX
-    let numbers = value.replace(/\D/g, '');
-    if (numbers.length > 11) numbers = numbers.slice(0, 11);
-    if (numbers.length === 0) return '';
-    if (numbers.length <= 2) return `(${numbers}`;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
-  const validatePhone = (phoneNumber: string) => {
-    if (isInternational(phoneNumber)) {
-      const digits = phoneNumber.replace(/\D/g, '');
-      return digits.length >= 7 && digits.length <= 15;
-    }
-    const numbers = phoneNumber.replace(/\D/g, '');
-    return numbers.length === 11 && numbers[2] === '9';
-  };
-
-  const validateEmail = (emailValue: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(emailValue);
-  };
-
+  // Validação de telefone/email vem de shared/validation.ts — a mesma que o
+  // servidor usa. O campo só formata para exibição; o envio manda o dado normalizado.
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setPhone(formatted);
+    setPhone(formatPhone(e.target.value));
     setPhoneError('');
   };
 
@@ -159,25 +161,9 @@ export default function Home() {
         setPhoneError('');
       }
     },
-    onError: (error: any) => {
-      let mensagemErro = 'Erro ao criar inscrição. Tente novamente.';
-      
-      // Extrair a mensagem do erro (pode estar em diferentes níveis)
-      const errorMessage = error?.message || error?.data?.message || error?.cause?.message || JSON.stringify(error);
-      const errorLower = errorMessage?.toLowerCase() || '';
-      
-      console.error('[Form Error] Full error:', error);
-      console.error('[Form Error] Extracted message:', errorMessage);
-      console.error('[Form Error] Lowercase:', errorLower);
-      
-      if (errorLower.includes('ja inscrito') || errorLower.includes('already exists') || errorLower.includes('duplicate')) {
-        mensagemErro = 'Email já inscrito. Obrigado pelo interesse!';
-      } else if (errorLower.includes('email')) {
-        mensagemErro = 'Email inválido';
-      } else if (errorLower.includes('telefone') || errorLower.includes('phone')) {
-        mensagemErro = 'Telefone inválido';
-      }
-      setPhoneError(mensagemErro);
+    onError: (error) => {
+      // Lê a estrutura zodError em vez de fazer parsing do texto do erro.
+      setPhoneError(mensagemDeErro(error));
     },
   });
 
@@ -191,7 +177,7 @@ export default function Home() {
       setPhoneError('Email obrigatório');
       return;
     }
-    if (!validateEmail(email)) {
+    if (!isValidEmail(email)) {
       setPhoneError('Email inválido');
       return;
     }
@@ -199,18 +185,19 @@ export default function Home() {
       setPhoneError('Telefone obrigatório');
       return;
     }
-    if (!validatePhone(phone)) {
+    if (!isValidPhone(phone)) {
       setPhoneError(
         isInternational(phone)
           ? 'Telefone internacional inválido. Use o formato: +55 11 99999-9999'
-          : 'Telefone inválido. Use o formato: (11) 99999-9999'
+          : phoneErrorMessage(phone)
       );
       return;
     }
     criarInscricao.mutate({
       nome: name,
       email,
-      telefone: phone,
+      // Envia o dado normalizado (dígitos), não a máscara de apresentação.
+      telefone: normalizePhone(phone),
     });
   };
 
@@ -349,66 +336,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg p-8 max-w-md w-full border border-blue-900/30">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black">INSCREVER-SE</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-white transition"
-              >
-                <X size={24} />
-              </button>
+      {/* Modal de inscrição — Radix cuida de foco, Esc, clique fora e aria-modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent
+          showCloseButton={false}
+          className="bg-gray-900 border-blue-900/30 p-8 sm:max-w-md"
+        >
+          <DialogHeader className="mb-2">
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-2">
+                <DialogTitle className="text-2xl font-black text-white">
+                  INSCREVER-SE
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 text-sm">
+                  Entre na lista de espera e receba a data da próxima turma antes de todo mundo.
+                </DialogDescription>
+              </div>
+              <DialogClose className={`${FOCO_ANEL} text-gray-400 hover:text-white transition rounded-lg p-1 -m-1 shrink-0`}>
+                <X size={24} aria-hidden="true" />
+                <span className="sr-only">Fechar</span>
+              </DialogClose>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="inscricao-nome" className="block text-sm font-semibold text-gray-200">
+                Nome
+              </label>
               <input
+                id="inscricao-nome"
                 type="text"
+                autoComplete="name"
                 placeholder="Seu nome"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
+                className={CAMPO}
                 required
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="inscricao-email" className="block text-sm font-semibold text-gray-200">
+                Email
+              </label>
               <input
+                id="inscricao-email"
                 type="email"
-                placeholder="Seu email"
+                autoComplete="email"
+                placeholder="voce@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
+                className={CAMPO}
                 required
               />
-              <div>
-                <input
-                  type="tel"
-                  placeholder="(11) 99999-9999 ou +1 555 0000"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition ${
-                    phoneError
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-gray-700 focus:border-green-500'
-                  }`}
-                  required
-                />
-                {phoneError && (
-                  <div className="mt-2 flex items-center gap-2 text-red-400 text-sm">
-                    <AlertCircle size={16} />
-                    <span>{phoneError}</span>
-                  </div>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-green-500 text-white font-black py-3 rounded-lg hover:bg-green-600 transition"
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="inscricao-telefone" className="block text-sm font-semibold text-gray-200">
+                Telefone
+              </label>
+              <input
+                id="inscricao-telefone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="(11) 99999-9999 ou +1 555 0000"
+                value={phone}
+                onChange={handlePhoneChange}
+                className={CAMPO}
+                required
+              />
+            </div>
+
+            {/* role="alert" faz o leitor de tela anunciar sem precisar de foco.
+                Fica no nível do formulário porque o erro pode ser de qualquer campo. */}
+            {phoneError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2"
               >
-                CONFIRMAR INSCRIÇÃO
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+                <AlertCircle size={16} className="shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{phoneError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={criarInscricao.isPending}
+              className={`${FOCO_ANEL} w-full bg-green-500 text-white font-black py-3 rounded-lg hover:bg-green-600 transition disabled:bg-green-500/50 disabled:cursor-not-allowed`}
+            >
+              {criarInscricao.isPending ? 'ENVIANDO…' : 'CONFIRMAR INSCRIÇÃO'}
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
 
 
@@ -520,37 +541,43 @@ export default function Home() {
               <div className="flex mb-6">
                 <div className="inline-flex items-center gap-2 border-2 border-white rounded-full px-5 py-2">
                   <span className="w-2 h-2 bg-white rounded-full"></span>
-                  <span className="text-white font-black text-xs">INSCRIÇÕES ABERTAS</span>
+                  <span className="text-white font-black text-xs">
+                    {timeLeft.expired ? 'LISTA DE ESPERA ABERTA' : 'INSCRIÇÕES ABERTAS'}
+                  </span>
                 </div>
               </div>
-              <h3 className="text-4xl md:text-5xl font-black mb-10 text-white">A primeira aula começa em</h3>
-              
-              <div className="grid grid-cols-2 gap-4 md:flex md:gap-6">
-                <div className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
-                  <div className="text-4xl md:text-5xl font-black text-white mb-2">
-                    {String(timeLeft.days).padStart(2, '0')}
+
+              {timeLeft.expired ? (
+                <>
+                  <h3 className="text-4xl md:text-5xl font-black mb-6 text-white">
+                    A próxima turma está sendo montada
+                  </h3>
+                  <p className="text-white/90 text-lg leading-relaxed max-w-md">
+                    Entre na lista de espera e você recebe a data de abertura antes
+                    de todo mundo, junto com as condições da turma.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-4xl md:text-5xl font-black mb-10 text-white">A primeira aula começa em</h3>
+
+                  <div className="grid grid-cols-2 gap-4 md:flex md:gap-6">
+                    {[
+                      { valor: timeLeft.days, rotulo: 'Dias' },
+                      { valor: timeLeft.hours, rotulo: 'Horas' },
+                      { valor: timeLeft.minutes, rotulo: 'Minutos' },
+                      { valor: timeLeft.seconds, rotulo: 'Segundos' },
+                    ].map(({ valor, rotulo }) => (
+                      <div key={rotulo} className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
+                        <div className="text-4xl md:text-5xl font-black text-white mb-2">
+                          {String(valor).padStart(2, '0')}
+                        </div>
+                        <p className="text-xs font-bold text-white/90 uppercase tracking-wider">{rotulo}</p>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Dias</p>
-                </div>
-                <div className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
-                  <div className="text-4xl md:text-5xl font-black text-white mb-2">
-                    {String(timeLeft.hours).padStart(2, '0')}
-                  </div>
-                  <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Horas</p>
-                </div>
-                <div className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
-                  <div className="text-4xl md:text-5xl font-black text-white mb-2">
-                    {String(timeLeft.minutes).padStart(2, '0')}
-                  </div>
-                  <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Minutos</p>
-                </div>
-                <div className="flex-1 bg-white/30 backdrop-blur-sm rounded-xl p-5 text-center">
-                  <div className="text-4xl md:text-5xl font-black text-white mb-2">
-                    {String(timeLeft.seconds).padStart(2, '0')}
-                  </div>
-                  <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Segundos</p>
-                </div>
-              </div>
+                </>
+              )}
             </div>
             
             <div className="hidden md:flex justify-center md:justify-end md:-mr-32 md:-mb-24 relative z-20">
@@ -630,7 +657,7 @@ export default function Home() {
               </div>
               <div className="p-6">
 
-                <h3 className="text-xl font-black mb-4 text-white">AUTOCÚSTÓDIA</h3>
+                <h3 className="text-xl font-black mb-4 text-white">AUTOCUSTÓDIA</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">
                   Aprenda a ser o único dono dos seus ativos. Você vai entender como proteger suas criptomoedas fora das exchanges, eliminando o risco de perder tudo por falhas ou bloqueios de terceiros.
                 </p>
@@ -702,7 +729,7 @@ export default function Home() {
 
                 <h3 className="text-xl font-black mb-4 text-white">Airdrop, Tudo para que você possa lucrar</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">
-                  Aprenda a capturar valor onde a maioria nem sabe que existe. Você vai entender como funcionam os airdrops e como se posicionar estrategicamente para lucrar com distribuições gra tuítas de tokens.
+                  Aprenda a capturar valor onde a maioria nem sabe que existe. Você vai entender como funcionam os airdrops e como se posicionar estrategicamente para lucrar com distribuições gratuitas de tokens.
                 </p>
               </div>
             </div>
@@ -803,7 +830,7 @@ export default function Home() {
               <div className="p-6">
                 <h3 className="text-2xl font-black mb-4 text-blue-500">Mapa de Airdrops</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">
-                  Acesso exclusivo ao mapa mental e estratégia completa de farm de airdrops. Identifique oportunidades lucrativos e organize suas participações de forma profissional.
+                  Acesso exclusivo ao mapa mental e estratégia completa de farm de airdrops. Identifique oportunidades lucrativas e organize suas participações de forma profissional.
                 </p>
               </div>
             </div>
@@ -912,7 +939,7 @@ export default function Home() {
               <video autoPlay muted loop className="rounded-lg w-full md:w-[600px] md:flex-shrink-0" style={{height: 'auto', aspectRatio: '16/9'}}>
 
                 <source src="/videos/resultado-trader.mov" type="video/mp4" />
-                Seu navegador nao suporta o elemento de video.
+                Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
           </div>
@@ -957,7 +984,7 @@ export default function Home() {
               </div>
               <video autoPlay muted loop className="rounded-lg w-full md:w-[600px] md:flex-shrink-0" style={{height: 'auto', aspectRatio: '16/9'}}>
                 <source src="/videos/resultado-airdrop.mov" type="video/mp4" />
-                Seu navegador nao suporta o elemento de video.
+                Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
           </div>
@@ -1129,7 +1156,7 @@ export default function Home() {
               </video>
               <h3 className="text-xl font-black text-blue-400 mb-3">Solana Breakpoint Abu Dhabi</h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                Participacao especial no Evento Solana Breakpoint Abu Dhabi, realizado em 2025.
+                Participação especial no Evento Solana Breakpoint Abu Dhabi, realizado em 2025.
               </p>
               <p className="text-xs text-blue-400 font-bold">2025</p>
             </div>
