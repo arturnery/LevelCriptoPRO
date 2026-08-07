@@ -3,7 +3,7 @@
 ![Build](https://img.shields.io/github/actions/workflow/status/arturnery/LevelCriptoPRO/ci.yml?branch=main&label=build)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Node](https://img.shields.io/badge/node-20%2B-brightgreen)
-![Tests](https://img.shields.io/badge/tests-108%20passing-success)
+![Tests](https://img.shields.io/badge/tests-47%20passing-success)
 ![Deploy](https://img.shields.io/badge/deploy-Vercel-black)
 
 Landing page fullstack para o curso **Level Cripto PRO**, com sistema de captação de leads integrado a banco de dados. O projeto foi migrado de uma plataforma proprietária (Manus) para uma stack open source sob controle total do desenvolvedor, reduzindo o custo de infraestrutura a **zero**.
@@ -87,10 +87,16 @@ Free tier permanente com suporte nativo a HTTP queries — elimina o overhead de
 O Vercel compila TypeScript para JavaScript mas **não resolve imports relativos locais em projetos com `"type": "module"`** (Node.js ESM). A solução foi pré-compilar `server/trpc-handler.ts` com esbuild (`--bundle --packages=external`) antes do deploy, gerando `api/trpc/[trpc].js` como bundle autossuficiente. Sem isso, o runtime recebia `ERR_MODULE_NOT_FOUND` em produção.
 
 ### Zod v4 + tRPC v11
-tRPC v11.10+ suporta Zod v4 nativamente. A validação de input é declarada uma vez no servidor e propagada automaticamente ao cliente via tipos inferidos — sem duplicar schemas.
+O projeto usa Zod 4 com tRPC 11 (instalado 11.10; piso declarado `^11.6.0`). Os **tipos** do router são inferidos e propagados ao cliente sem codegen. A validação de _runtime_ do input mora em `shared/validation.ts` (`criarInscricaoSchema`) e é importada tanto pelo servidor (`inscricoes.criar`) quanto pelo cliente — schema declarado uma vez, uma fonte de verdade para os dois lados.
+
+### Contrato de API carrega dados, não apresentação
+O campo de telefone formata para exibição, mas o que trafega para a API é a forma **normalizada** (`normalizePhone`: dígitos, com `+` no internacional). O servidor valida dígitos (`isValidPhone`), não a string mascarada — um telefone de puro lixo é reprovado no contrato, não só no navegador.
 
 ### Validação de telefone dual-mode
-Números brasileiros seguem máscara `(XX) 9XXXX-XXXX`. Números internacionais (prefixo `+`) são aceitos em formato livre com 7–15 dígitos — detectado pelo prefixo `+` sem forçar parsing de código de país.
+Números brasileiros seguem máscara `(XX) 9XXXX-XXXX` (11 dígitos, 9 na terceira posição). Números internacionais (prefixo `+`) são aceitos em formato livre com 7–15 dígitos — detectado pelo prefixo `+` sem forçar parsing de código de país. As mesmas regras valem no cliente e no servidor, porque ambos importam de `shared/validation.ts`.
+
+### Detecção de duplicata sem parsing de string
+`inscricoes.criar` grava com `onConflictDoNothing({ target: email }).returning()`: o caminho feliz resolve em uma única ida ao banco e a duplicata é detectada estruturalmente (returning vazio), sem depender do texto da mensagem de erro do Postgres. O núcleo dessa decisão é a função pura `interpretInsert`, coberta por teste.
 
 ---
 
@@ -155,22 +161,27 @@ pnpm test
 
 ```
 Test Files  8 passed (8)
-     Tests  108 passed (108)
-  Duration  1.6s
+     Tests  47 passed (47)
+  Duration  1.3s
 ```
 
-Cobertura dos testes:
+Todos os testes importam o código de produção (de `shared/`, `server/db.ts` ou
+`server/routers.ts`) em vez de manter uma cópia da lógica — se a implementação
+mudar e um teste ficar desatualizado, ele quebra em vez de passar em silêncio.
 
-| Arquivo | O que testa |
-|---|---|
-| `form-validation.test.ts` | Validação completa do formulário de inscrição |
-| `phone-validation.test.ts` | Máscaras e regras do campo telefone |
-| `duplicate-email.test.ts` | Comportamento para e-mails já cadastrados |
-| `drizzle-error-handling.test.ts` | Extração de erros do Drizzle/PostgreSQL |
-| `error-extraction.test.ts` | Parser de mensagens de erro tRPC |
-| `nome-validation.test.ts` | Validação do campo nome |
-| `format-phone.test.ts` | Formatação automática de telefone |
-| `auth.logout.test.ts` | Fluxo de logout via tRPC |
+| Arquivo | O que testa | Alvo de produção |
+|---|---|---|
+| `criar-inscricao-schema.test.ts` | Contrato de input de `inscricoes.criar`, incluindo a rejeição de telefone-lixo | `criarInscricaoSchema` |
+| `phone-validation.test.ts` | Regras dual-mode e mensagens do telefone | `isValidPhone`, `phoneErrorMessage` |
+| `format-phone.test.ts` | Máscara de exibição (BR e internacional) | `formatPhone` |
+| `form-validation.test.ts` | Validação de e-mail e telefone | `isValidEmail`, `isValidPhone` |
+| `nome-validation.test.ts` | Campo nome dentro do schema | `nomeSchema`, `criarInscricaoSchema` |
+| `duplicate-email.test.ts` | Detecção estrutural de duplicata | `interpretInsert` |
+| `error-extraction.test.ts` | Mapa de erro do formulário via `zodError` | `mensagemDeErro` |
+| `auth.logout.test.ts` | Fluxo de logout via tRPC | `appRouter` (createCaller) |
+
+O typecheck e a suíte rodam a cada push e pull request pelo workflow
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ---
 
@@ -219,12 +230,30 @@ Cobertura dos testes:
 
 ## Roadmap
 
+### Interface e acessibilidade
+
+Frentes levantadas em auditoria de design e priorizadas para as próximas iterações:
+
+- [ ] **Escala tipográfica com hierarquia** — hoje o peso 900 (`font-black`) é usado em quase todo texto; criar degraus de peso e tamanho entre título e corpo.
+- [ ] **Sistema de cores unificado via tokens** — padronizar os CTAs, elevar o contraste ao mínimo WCAG AA (texto azul-escuro sobre preto está em ~2:1) e trazer os cards de depoimento para o tema escuro.
+- [ ] **Navegação mobile** — menu abaixo de 768px, alvos de toque ≥ 44px e correção do overflow horizontal.
+- [ ] **Texto fora das imagens** — mover para HTML o texto hoje embutido nos PNGs de módulos e diferenciais (busca, tradução e leitor de tela).
+- [ ] **Acessibilidade WCAG AA completa** — `aria-expanded` no FAQ, rótulos nos controles do carrossel, foco visível, `prefers-reduced-motion` e `alt` descritivo nas imagens.
+- [ ] **Otimização de assets** — vídeos < 2 MB (MP4/WebM com `poster`, sem autoplay pesado) e imagens em WebP com `loading="lazy"`.
+
+### Produto
+
 - [ ] Painel admin com autenticação JWT para visualizar inscrições
 - [ ] Webhook para notificação via WhatsApp/e-mail a cada novo lead
 - [ ] Internacionalização (i18n) para inglês e espanhol
-- [ ] Testes E2E com Playwright
-- [ ] CI/CD com GitHub Actions (lint + testes + deploy automático)
 - [ ] Métricas de conversão do formulário
+
+### Qualidade e infraestrutura
+
+- [x] **CI com GitHub Actions** (typecheck + testes a cada push/PR) — [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+- [x] **Validação como fonte única** compartilhada entre cliente e servidor (`shared/validation.ts`)
+- [ ] Deploy automático no merge para `main`
+- [ ] Testes E2E com Playwright
 
 ---
 
